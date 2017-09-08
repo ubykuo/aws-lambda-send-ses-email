@@ -1,5 +1,7 @@
 ﻿{
-    "email": "customer@customer-domain.com",
-    "name": "Customer Name",
-    "message": "Hello World!\nGoing to the moon!"
+	"data" : {		
+	    "email": "customer@customer-domain.com",
+	    "name": "test",
+	    "message": "Hello World!\nGoing to the moon!"
+	}
 }

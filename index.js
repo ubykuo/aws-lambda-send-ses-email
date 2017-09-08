@@ -1,28 +1,30 @@
-﻿console.log('Version 0.1.3');
+﻿﻿console.log('Version 0.1.3');
 
 var aws = require('aws-sdk');
 
 var ses = new aws.SES();
 var fs = require('fs')
 
-exports.handler = function (event, context) {
+exports.handler = function (event, context, callback) {
     
     console.log("Event: " + JSON.stringify(event));
     
+    var input = event.data;
+
     // Check required parameters
-    if (event.email == null) {
+    if (input.email == null) {
         context.fail('Bad Request: Missing required member: email');
         return;
     }
 
     var config = require('./config.js');
     
-    if (event.name == null) {
-        event.name = event.email;
+    if (input.name == null) {
+        input.name = input.email;
     }
     
-    if (event.subject == null) {
-        event.subject = config.defaultSubject;
+    if (input.subject == null) {
+        input.subject = config.defaultSubject;
     }
     
     fs.readFile(config.templateKey, 'utf8', function (err,data) {
@@ -34,8 +36,8 @@ exports.handler = function (event, context) {
             console.log("Template Body: " + templateBody);
             
             // Convert newlines in the message
-            if (event.message != null) {
-                event.message = event.message
+            if (input.message != null) {
+                input.message = input.message
                 .replace("\r\n", "<br />")
                 .replace("\r", "<br />")
                 .replace("\n", "<br />");
@@ -44,7 +46,7 @@ exports.handler = function (event, context) {
             // Perform the substitutions
             var mark = require('markup-js');
             
-            var message = mark.up(templateBody, event);
+            var message = mark.up(templateBody, input);
             console.log("Final message: " + message);
             
             var params = {
@@ -68,7 +70,7 @@ exports.handler = function (event, context) {
                 },
                 Source: config.fromAddress,
                 ReplyToAddresses: [
-                    event.name + '<' + event.email + '>'
+                    input.name + '<' + input.email + '>'
                 ]
             };
             
@@ -79,7 +81,7 @@ exports.handler = function (event, context) {
                     context.fail('Internal Error: The email could not be sent.');
                 } else {
                     console.log(data);
-                    context.succeed('The email was successfully sent to ' + event.email);
+                    context.done('The email was successfully sent.');
                 }
             });
         }
